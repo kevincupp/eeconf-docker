@@ -1,0 +1,49 @@
+version: '3'
+services:
+  traefik:
+    image: traefik
+    command: --api --docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 80:80
+      - 8080:8080
+
+  mysql:
+    image: mysql:5
+    ports:
+      - 3306:3306
+    volumes:
+      - db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+
+  # Sites:
+
+  site1:
+    build: .
+    image: php_apache
+    volumes:
+      - /local/path/to/site1:/var/www/html:delegated
+    labels:
+      - "traefik.frontend.rule=Host:site1.localhost"
+
+  site2:
+    build: .
+    image: php_apache
+    volumes:
+      - /local/path/to/site2:/var/www/html:delegated
+    labels:
+      - "traefik.frontend.rule=Host:site2.localhost"
+
+  site3:
+    build: .
+    image: php_apache
+    volumes:
+      - /local/path/to/site3:/var/www/html:delegated
+      - ./php.ini:/usr/local/etc/php/php.ini
+    labels:
+      - "traefik.frontend.rule=Host:site3.localhost"
+
+volumes:
+  db:
